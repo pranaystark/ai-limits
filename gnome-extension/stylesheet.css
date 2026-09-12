@@ -1,0 +1,29 @@
+.ai-limits-box {
+  spacing: 2px;
+}
+
+.ai-limits-label {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  padding: 0 2px;
+}
+
+.ai-limits-sep {
+  opacity: 0.45;
+}
+
+.ai-limits-ok {
+  color: #57e389;
+}
+
+.ai-limits-warn {
+  color: #f8e45c;
+}
+
+.ai-limits-crit {
+  color: #ff7b63;
+}
+
+.ai-limits-muted {
+  opacity: 0.7;
+}

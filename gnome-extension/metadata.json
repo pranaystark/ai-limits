@@ -1,0 +1,8 @@
+{
+  "uuid": "ai-limits@local",
+  "name": "AI Limits",
+  "description": "Panel chip for AGY and Grok remaining usage. Click to toggle the Limits card.",
+  "shell-version": ["45", "46", "47", "48", "49", "50", "51"],
+  "session-modes": ["user"],
+  "version": 1
+}

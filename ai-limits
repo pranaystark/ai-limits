@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+ROOT=$(dirname "$(readlink -f "$0")")
+if [ -f "$ROOT/ai_limits.py" ]; then
+  exec python3 "$ROOT/ai_limits.py" "$@"
+fi
+if [ -f "$ROOT/../share/ai-limits/ai_limits.py" ]; then
+  exec python3 "$ROOT/../share/ai-limits/ai_limits.py" "$@"
+fi
+echo "ai-limits: could not find ai_limits.py next to $0" >&2
+exit 1

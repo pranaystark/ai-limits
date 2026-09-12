@@ -1,0 +1,166 @@
+window.limits-widget {
+  background: transparent;
+}
+
+.widget-card {
+  background: alpha(#161616, 0.94);
+  border-radius: 18px;
+  border: 1px solid alpha(#ffffff, 0.10);
+  padding: 10px 12px 12px;
+  box-shadow: 0 16px 40px alpha(#000000, 0.45);
+}
+
+.chrome {
+  margin-bottom: 6px;
+}
+
+.chrome-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  opacity: 0.55;
+}
+
+.icon-btn {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.pie-refresh {
+  min-width: 22px;
+  min-height: 22px;
+  padding: 2px;
+  border-radius: 999px;
+  background: alpha(#000000, 0.38);
+}
+
+.pie-refresh:hover {
+  background: alpha(#000000, 0.58);
+}
+
+.hero.busy {
+  opacity: 0.72;
+}
+
+.hero {
+  border-radius: 14px;
+  padding: 10px 8px 8px;
+  min-width: 140px;
+}
+
+.hero.agy {
+  background: alpha(#0f9d8e, 0.16);
+}
+
+.hero.grok {
+  background: alpha(#c4622d, 0.18);
+}
+
+.hero-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.62;
+}
+
+.hero-sub {
+  font-size: 11px;
+  opacity: 0.62;
+  margin-top: 1px;
+}
+
+.section-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.5;
+  margin: 10px 0 4px;
+}
+
+.group-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 6px 0 2px;
+}
+
+.row-title {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.row-pct {
+  font-weight: 700;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+.row-meta {
+  font-size: 10.5px;
+  opacity: 0.52;
+}
+
+.footer {
+  font-size: 10.5px;
+  opacity: 0.5;
+  padding-top: 6px;
+}
+
+.tone-ok {
+  color: #57e389;
+}
+
+.tone-warn {
+  color: #f8e45c;
+}
+
+.tone-crit {
+  color: #ff7b63;
+}
+
+progressbar.limits-bar {
+  min-height: 7px;
+}
+
+progressbar.limits-bar trough {
+  min-height: 7px;
+  border-radius: 99px;
+  background: alpha(currentColor, 0.10);
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+
+progressbar.limits-bar progress {
+  min-height: 7px;
+  border-radius: 99px;
+  border: none;
+  background: #57e389;
+}
+
+progressbar.limits-bar.warn progress {
+  background: #f8e45c;
+}
+
+progressbar.limits-bar.crit progress {
+  background: #ff7b63;
+}
+
+progressbar.limits-bar.agy progress {
+  background: #14b8a6;
+}
+
+progressbar.limits-bar.agy.warn progress,
+progressbar.limits-bar.grok.warn progress {
+  background: #f8e45c;
+}
+
+progressbar.limits-bar.agy.crit progress,
+progressbar.limits-bar.grok.crit progress {
+  background: #ff7b63;
+}
+
+progressbar.limits-bar.grok progress {
+  background: #e0783a;
+}
