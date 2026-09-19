@@ -82,7 +82,7 @@ If either command fails, fix that first. The widget only wraps those two calls.
 ## Install (from git)
 
 ```bash
-git clone <your-repo-url> ai-limits
+git clone https://github.com/pranaystark/ai-limits.git
 cd ai-limits
 chmod +x install.sh uninstall.sh ai-limits
 ./install.sh

@@ -30,6 +30,9 @@ STATE_PATH = CACHE_DIR / "state.json"
 CSS_PATH = Path(__file__).with_name("style.css")
 ICON_DIR = Path(__file__).with_name("icons")
 HOME_BIN = Path.home() / ".local" / "bin"
+SNI_ITEM_PATH = "/StatusNotifierItem"
+SNI_MENU_PATH = "/StatusNotifierItem/menu"
+
 
 AGY_ROW = re.compile(
     r"^(?P<group>.+?)\s+(?P<window>Weekly|Five Hour) Limit Remaining\s+"
@@ -760,55 +763,81 @@ def _menu_var(key: str, value):
 
 
 class StatusIcon:
-    def __init__(self, app: Adw.Application, path: str, item_id: str, kind: str, title: str) -> None:
+    def __init__(self, app: Adw.Application, kind: str, title: str) -> None:
         self._app = app
-        self._path = path
-        self._item_id = item_id
         self._kind = kind
         self._title = title
+        self._item_id = f"ai-limits-{kind}"
+        self._service = f"org.kde.StatusNotifierItem-ai-limits-{kind}"
         self._conn: Gio.DBusConnection | None = None
         self._label = "—%"
         self._guide = "100%"
         self._tip = title
-        self._menu_path = f"{path}/menu"
-        self._menu = GlanceMenu(app, self._menu_path, kind)
+        self._menu = GlanceMenu(app, SNI_MENU_PATH, kind)
         self._pixmap = brand_pixmap(kind, 100)
+        self._owner_id = 0
+        self._watch_id = 0
 
-    def export(self, connection: Gio.DBusConnection) -> None:
-        self._conn = connection
-        self._menu.export(connection)
+    def export(self) -> None:
+        if self._conn is not None:
+            return
+        addr = Gio.dbus_address_get_for_bus_sync(Gio.BusType.SESSION, None)
+        conn = Gio.DBusConnection.new_for_address_sync(
+            addr,
+            (
+                Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
+                | Gio.DBusConnectionFlags.MESSAGE_BUS_CONNECTION
+            ),
+            None,
+            None,
+        )
+        conn.set_exit_on_close(False)
+        self._conn = conn
+        self._menu.export(conn)
         info = Gio.DBusNodeInfo.new_for_xml(SNI_XML)
-        connection.register_object(
-            self._path,
+        conn.register_object(
+            SNI_ITEM_PATH,
             info.interfaces[0],
             self._on_method,
             self._on_get,
             None,
         )
-        Gio.DBusProxy.new(
-            connection,
-            Gio.DBusProxyFlags.NONE,
+        self._owner_id = Gio.bus_own_name_on_connection(
+            conn,
+            self._service,
+            Gio.BusNameOwnerFlags.NONE,
+            self._on_name_acquired,
             None,
+        )
+        self._watch_id = Gio.bus_watch_name_on_connection(
+            conn,
+            "org.kde.StatusNotifierWatcher",
+            Gio.BusNameWatcherFlags.NONE,
+            self._on_watcher_appeared,
+            None,
+        )
+
+    def _on_name_acquired(self, _connection, _name) -> None:
+        self._register_with_watcher()
+
+    def _on_watcher_appeared(self, _connection, _name, _owner) -> None:
+        self._register_with_watcher()
+
+    def _register_with_watcher(self) -> None:
+        if self._conn is None:
+            return
+        self._conn.call(
             "org.kde.StatusNotifierWatcher",
             "/StatusNotifierWatcher",
             "org.kde.StatusNotifierWatcher",
+            "RegisterStatusNotifierItem",
+            GLib.Variant("(s)", (self._service,)),
             None,
-            self._on_watcher,
+            Gio.DBusCallFlags.NONE,
+            4000,
+            None,
+            None,
         )
-
-    def _on_watcher(self, _source, result) -> None:
-        try:
-            proxy = Gio.DBusProxy.new_finish(result)
-            proxy.call(
-                "RegisterStatusNotifierItem",
-                GLib.Variant("(s)", (self._path,)),
-                Gio.DBusCallFlags.NONE,
-                4000,
-                None,
-                None,
-            )
-        except Exception:
-            pass
 
     def set_value(self, remaining: float | None, subtitle: str) -> None:
         self._label = "—%" if remaining is None else f"{int(round(remaining))}%"
@@ -821,16 +850,16 @@ class StatusIcon:
             return
         self._conn.emit_signal(
             None,
-            self._path,
+            SNI_ITEM_PATH,
             "org.kde.StatusNotifierItem",
             "XAyatanaNewLabel",
             GLib.Variant("(ss)", (self._label, self._guide)),
         )
-        self._conn.emit_signal(None, self._path, "org.kde.StatusNotifierItem", "NewIcon", None)
-        self._conn.emit_signal(None, self._path, "org.kde.StatusNotifierItem", "NewToolTip", None)
+        self._conn.emit_signal(None, SNI_ITEM_PATH, "org.kde.StatusNotifierItem", "NewIcon", None)
+        self._conn.emit_signal(None, SNI_ITEM_PATH, "org.kde.StatusNotifierItem", "NewToolTip", None)
         self._conn.emit_signal(
             None,
-            self._path,
+            SNI_ITEM_PATH,
             "org.freedesktop.DBus.Properties",
             "PropertiesChanged",
             GLib.Variant(
@@ -867,7 +896,7 @@ class StatusIcon:
             "Status": GLib.Variant("s", "Active"),
             "WindowId": GLib.Variant("i", 0),
             "IconThemePath": GLib.Variant("s", ""),
-            "Menu": GLib.Variant("o", self._menu_path),
+            "Menu": GLib.Variant("o", SNI_MENU_PATH),
             "ItemIsMenu": GLib.Variant("b", False),
             "IconName": GLib.Variant("s", ""),
             "IconPixmap": GLib.Variant("a(iiay)", self._pixmap),
@@ -1110,8 +1139,8 @@ class LimitsApp(Adw.Application):
         )
         self._start_hidden = start_hidden
         self.win: LimitsWindow | None = None
-        self.tray_agy = StatusIcon(self, "/StatusNotifierItem/agy", "ai-limits-agy", "agy", "AGY")
-        self.tray_grok = StatusIcon(self, "/StatusNotifierItem/grok", "ai-limits-grok", "grok", "Grok")
+        self.tray_agy = StatusIcon(self, "agy", "AGY")
+        self.tray_grok = StatusIcon(self, "grok", "Grok")
         self.hold()
         for name, handler in (
             ("toggle", self._toggle),
@@ -1128,12 +1157,11 @@ class LimitsApp(Adw.Application):
     def do_startup(self) -> None:  # noqa: N802
         Adw.Application.do_startup(self)
         _load_css()
+        self.tray_agy.export()
+        self.tray_grok.export()
 
     def do_dbus_register(self, connection, object_path) -> bool:  # noqa: N802
-        ok = Adw.Application.do_dbus_register(self, connection, object_path)
-        self.tray_agy.export(connection)
-        self.tray_grok.export(connection)
-        return ok
+        return Adw.Application.do_dbus_register(self, connection, object_path)
 
     def update_tray(self, state: State) -> None:
         agy, asub = state.headline_agy()
