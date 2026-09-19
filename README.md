@@ -4,6 +4,8 @@ Desktop tray + glance for **Google Antigravity (`agy`)** and **xAI Grok (`omp` /
 
 No background polling. Fetches once at start, then only when you hit Refresh (both, or AGY / Grok separately).
 
+![GNOME tray chips: Grok 91% and AGY 100%](screenshots/gnome-panel.png)
+
 ```
 systray:  [Antigravity] 100%    [Grok] 66%
 click  →  glance (buckets, reset, Refresh AGY / Refresh Grok / Open card)
